@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'edit_profile_page.dart';
+import 'settings_page.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -39,7 +40,12 @@ class _ProfilePageState extends State<ProfilePage> {
           actions: [
             IconButton(
               icon: Icon(Icons.settings_outlined, color: Colors.orange, size: 28),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SettingsPage()),
+                );
+              },
             ),
             SizedBox(width: 8),
           ],

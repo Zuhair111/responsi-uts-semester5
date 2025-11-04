@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
-import 'pages/home_page.dart';
+import 'pages/welcome_page.dart';
 
 void main() {
-  runApp(SocialHomePage());
+  runApp(const SozietyApp());
 }
 
-class SocialHomePage extends StatelessWidget {
+class SozietyApp extends StatelessWidget {
+  const SozietyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: HomePage(),
-      theme: ThemeData(
-        fontFamily: 'Poppins',
-        scaffoldBackgroundColor: Color(0xFFFFF7F3),
-      ),
+      home: WelcomeScreen(),
     );
   }
 }

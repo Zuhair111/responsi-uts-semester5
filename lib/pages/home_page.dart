@@ -7,7 +7,8 @@ import 'comments_page.dart';
 import 'create_post_page.dart';
 import 'chat_list_page.dart';
 import 'profile_page.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
+import 'welcome_page.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -28,7 +29,7 @@ class _HomePageState extends State<HomePage> {
   List<bool> liked = [false, false];
   List<int> likeCount = [221, 178];
 
-// Method untuk memilih halaman berdasarkan selectedIndex
+  // Method untuk memilih halaman berdasarkan selectedIndex
   Widget _getSelectedPage() {
     switch (_selectedIndex) {
       case 0:
@@ -38,16 +39,17 @@ class _HomePageState extends State<HomePage> {
       case 2:
         return ChatListPage();
       case 3:
-        return ProfilePage(); // Tambahkan ini
+        return ProfilePage();
       default:
         return _buildHomePage();
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      body: _getSelectedPage(), // Ganti di sini
+      body: _getSelectedPage(),
       endDrawer: _buildDrawer(),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.orange,
@@ -92,11 +94,11 @@ class _HomePageState extends State<HomePage> {
                     color: _selectedIndex == 2 ? Colors.orange : Colors.grey),
                 onPressed: () {
                   setState(() {
-                    _selectedIndex = 2; // Ubah hanya setState, tidak push
+                    _selectedIndex = 2;
                   });
                 },
               ),
-              IconButton( // Update dari Icon menjadi IconButton
+              IconButton(
                 icon: Icon(Icons.person_outline,
                     color: _selectedIndex == 3 ? Colors.orange : Colors.grey),
                 onPressed: () {
@@ -112,7 +114,6 @@ class _HomePageState extends State<HomePage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
-  
 
   Widget _buildHomePage() {
     return CustomScrollView(
@@ -410,7 +411,53 @@ class _HomePageState extends State<HomePage> {
                   _drawerItem(Icons.notifications, "Notification", badge: 1),
                   _drawerItem(Icons.person_outline, "Profile"),
                   _drawerItem(Icons.chat, "Chat", badge: 5),
-                  _drawerItem(Icons.logout, "Logout"),
+                  _drawerItem(Icons.logout, "Logout", onTap: () async {
+                    // Tampilkan dialog konfirmasi
+                    bool? confirmLogout = await showDialog<bool>(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          title: Text('Logout'),
+                          content: Text('Are you sure you want to logout?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: Text('Cancel',
+                                  style: TextStyle(color: Colors.grey)),
+                            ),
+                            ElevatedButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.orange,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: Text('Logout',
+                                  style: TextStyle(color: Colors.white)),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+
+                    // Jika user konfirmasi logout
+                    if (confirmLogout == true) {
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.setBool('isFirstTime', true);
+                      if (!mounted) return;
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => WelcomeScreen(),
+                        ),
+                        (route) => false,
+                      );
+                    }
+                  }),
                   Divider(color: Colors.white70),
                   SizedBox(height: 10),
                   Text("SETTINGS",
@@ -431,7 +478,11 @@ class _HomePageState extends State<HomePage> {
                                 style: TextStyle(color: Colors.white)),
                           ],
                         ),
-                        Switch(value: false, onChanged: (_) {}),
+                        Switch(
+                          value: false,
+                          onChanged: (_) {},
+                          activeColor: Colors.orange,
+                        ),
                       ],
                     ),
                   ),
@@ -444,20 +495,37 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _drawerItem(IconData icon, String title, {int? badge}) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Icon(icon, color: Colors.white),
-      title: Text(title, style: TextStyle(color: Colors.white)),
-      trailing: badge != null
-          ? Container(
-              padding: EdgeInsets.all(6),
-              decoration:
-                  BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-              child: Text('$badge',
-                  style: TextStyle(color: Colors.white, fontSize: 10)),
-            )
-          : null,
+  Widget _drawerItem(IconData icon, String title,
+      {int? badge, VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: Colors.white),
+                SizedBox(width: 10),
+                Text(title, style: TextStyle(color: Colors.white)),
+              ],
+            ),
+            if (badge != null)
+              Container(
+                padding: EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  badge.toString(),
+                  style: TextStyle(color: Colors.white, fontSize: 10),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 
